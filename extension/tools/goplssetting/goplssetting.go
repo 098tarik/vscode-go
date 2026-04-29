@@ -335,7 +335,7 @@ func toObject(opt *Option) (*Object, error) {
 	return obj, nil
 }
 
-func formatOptionDefault(opt *Option) interface{} {
+func formatOptionDefault(opt *Option) any {
 	// Each key will have its own default value, instead of one large global
 	// one. (Alternatively, we can build the default from the keys.)
 	if len(opt.EnumKeys.Keys) > 0 {
@@ -348,7 +348,7 @@ func formatOptionDefault(opt *Option) interface{} {
 // formatDefault converts a string-based default value to an actual value that
 // can be marshaled to JSON. Right now, gopls generates default values as
 // strings, but perhaps that will change.
-func formatDefault(def, typ string) interface{} {
+func formatDefault(def, typ string) any {
 	switch typ {
 	case "enum", "string", "time.Duration":
 		unquote, err := strconv.Unquote(def)
@@ -359,6 +359,14 @@ func formatDefault(def, typ string) interface{} {
 		var x []string
 		if err := json.Unmarshal([]byte(def), &x); err == nil {
 			return x
+		}
+	case "int", "int8", "int16", "int32", "int64":
+		if i, err := strconv.ParseInt(def, 10, 64); err == nil {
+			return i
+		}
+	case "uint", "uint8", "uint16", "uint32", "uint64":
+		if u, err := strconv.ParseUint(def, 10, 64); err == nil {
+			return u
 		}
 	}
 	switch def {
@@ -406,6 +414,9 @@ func mapType(t string) string {
 		return "object"
 	case "any":
 		return "boolean"
+	case "int", "int8", "int16", "int32", "int64",
+		"uint", "uint8", "uint16", "uint32", "uint64":
+		return "number"
 	}
 	log.Fatalf("unknown type %q", t)
 	return ""
@@ -418,7 +429,7 @@ type Object struct {
 	AdditionalProperties     bool               `json:"additionalProperties,omitempty"`
 	Enum                     []any              `json:"enum,omitempty"`
 	MarkdownEnumDescriptions []string           `json:"markdownEnumDescriptions,omitempty"`
-	Default                  interface{}        `json:"default,omitempty"`
+	Default                  any                `json:"default,omitempty"`
 	Scope                    string             `json:"scope,omitempty"`
 	Properties               map[string]*Object `json:"properties,omitempty"`
 	DeprecationMessage       string             `json:"deprecationMessage,omitempty"`

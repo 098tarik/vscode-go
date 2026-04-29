@@ -159,6 +159,21 @@ func TestWriteAsVSCodeSettings(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "int64",
+			in: &Option{
+				Name:    "maxFileCacheBytes",
+				Type:    "int64",
+				Default: "0",
+			},
+			want: map[string]*Object{
+				"maxFileCacheBytes": {
+					Type:    "number",
+					Default: int64(0),
+					Scope:   "resource",
+				},
+			},
+		},
 	}
 
 	for _, tc := range testCases {
