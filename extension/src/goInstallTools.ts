@@ -780,7 +780,6 @@ async function suggestDownloadGo() {
 	suggestedDownloadGo = true;
 }
 
-
 /**
  * Interface for the expected JSON output from `go list -m -versions -json`.
  * See https://go.dev/ref/mod#go-list-m for details.
