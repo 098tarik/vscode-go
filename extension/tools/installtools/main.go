@@ -167,7 +167,13 @@ func pickLatest(toolPath string, preferPreview bool) string {
 	if !preferPreview {
 		return "latest" // should we pick the pinned version in allTools.ts.in?
 	}
-	out, err := exec.Command("go", "list", "-m", "--versions", toolPath).Output()
+
+	cmd := exec.Command("go", "list", "-m", "--versions", toolPath)
+
+	// Avoid using module proxy to eliminate flakiness caused by module proxy.
+	cmd.Env = append(os.Environ(), "GOPROXY=direct")
+
+	out, err := cmd.Output()
 	if err != nil {
 		exitf("failed to find a suitable version for %q: %v", toolPath, err)
 	}
